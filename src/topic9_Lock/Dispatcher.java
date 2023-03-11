@@ -12,13 +12,13 @@ import java.util.regex.Pattern;
 public class Dispatcher {
 
     public static void main(String[] args) {
-        File file1 = new File("src/topic6_Thread_Basic/first_file.txt");
-        File file2 = new File("src/topic6_Thread_Basic/second_file.txt");
-        File file3 = new File("src/topic6_Thread_Basic/third_file.txt");
+        File file1 = new File("src/text1.txt");
+        File file2 = new File("src/text2.txt");
+        File file3 = new File("src/text3.txt");
 
-        Thread t1 = new Thread(new TextHandler(file1), "ONE");
-        Thread t2 = new Thread(new TextHandler(file2), "TWO");
-        Thread t3 = new Thread(new TextHandler(file3), "THREE");
+        Thread t1 = new Thread(new TextHandler(file1, "ONE"));
+        Thread t2 = new Thread(new TextHandler(file2, "TWO"));
+        Thread t3 = new Thread(new TextHandler(file3, "THREE"));
 
         t1.start();
         t2.start();
@@ -31,20 +31,26 @@ public class Dispatcher {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.println(TextHandler.getTextDigitSum());
+        System.out.println();
 
     }
 
 }
 
+class Counter {
+    static double count;
+}
+
 class TextHandler implements Runnable {
-    public static final Pattern PATTERN = Pattern.compile("([1-9]+[.,]?\\d*)");
+    public static final Pattern PATTERN = Pattern.compile("([1-9]+[.,]\\d+)");
     private File file;
+    String title;
     private static double textDigitSum;
     Lock lock = new ReentrantLock();
 
-    public TextHandler(File file) {
+    public TextHandler(File file, String title) {
         this.file = file;
+        this.title = title;
     }
 
     @Override
@@ -59,9 +65,9 @@ class TextHandler implements Runnable {
                     temp = Double.parseDouble(matcher.group());
                     try {
                         while (!lock.tryLock()) {
-                            System.out.println(Thread.currentThread().getName() + " LOCKED");
+                            System.out.println( Thread.currentThread().getName());
                         }
-                        textDigitSum += temp;
+                       Counter.count += temp;
                     } finally {
                         lock.unlock();
                     }
@@ -71,7 +77,6 @@ class TextHandler implements Runnable {
             e.printStackTrace();
         }
     }
-
     public File getFile() {
         return file;
     }
