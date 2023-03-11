@@ -31,13 +31,14 @@ public class Dispatcher {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        System.out.println(TextHandler.getTextDigitSum());
 
     }
 
 }
 
 class TextHandler implements Runnable {
-    public static final Pattern PATTERN = Pattern.compile("([1-9]+[.,]\\d+)");
+    public static final Pattern PATTERN = Pattern.compile("([1-9]+[.,]?\\d*)");
     private File file;
     private static double textDigitSum;
     Lock lock = new ReentrantLock();
@@ -48,25 +49,26 @@ class TextHandler implements Runnable {
 
     @Override
     public void run() {
-        if (lock.tryLock()) {
-
-            try (BufferedReader bReader = new BufferedReader(new FileReader(file))) {
-                Matcher matcher = null;
-                String retrievedLine = null;
-
-                while ((retrievedLine = bReader.readLine()) != null) {
-                    matcher = PATTERN.matcher(retrievedLine);
-                    while (matcher.find()) {
-                        textDigitSum += Double.parseDouble(matcher.group());
+        try (BufferedReader bReader = new BufferedReader(new FileReader(file))) {
+            Matcher matcher = null;
+            String retrievedLine = null;
+            double temp = 0;
+            while ((retrievedLine = bReader.readLine()) != null) {
+                matcher = PATTERN.matcher(retrievedLine);
+                while (matcher.find()) {
+                    temp = Double.parseDouble(matcher.group());
+                    try {
+                        while (!lock.tryLock()) {
+                            System.out.println(Thread.currentThread().getName() + " LOCKED");
+                        }
+                        textDigitSum += temp;
+                    } finally {
+                        lock.unlock();
                     }
                 }
-            } catch (NumberFormatException | IOException e) {
-                e.printStackTrace();
-            } finally {
-                lock.unlock();
             }
-        } else {
-            System.out.println(Thread.currentThread().getName() + " LOCKED");
+        } catch (NumberFormatException | IOException e) {
+            e.printStackTrace();
         }
     }
 
