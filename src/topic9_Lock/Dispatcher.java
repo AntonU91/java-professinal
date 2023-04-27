@@ -16,9 +16,11 @@ public class Dispatcher {
         File file2 = new File("src/text2.txt");
         File file3 = new File("src/text3.txt");
 
-        Thread t1 = new Thread(new TextHandler(file1, "ONE"));
-        Thread t2 = new Thread(new TextHandler(file2, "TWO"));
-        Thread t3 = new Thread(new TextHandler(file3, "THREE"));
+        Lock lock = new ReentrantLock();
+
+        Thread t1 = new Thread(new TextHandler(file1, "ONE", lock));
+        Thread t2 = new Thread(new TextHandler(file2, "TWO", lock));
+        Thread t3 = new Thread(new TextHandler(file3, "THREE", lock));
 
         t1.start();
         t2.start();
@@ -31,26 +33,23 @@ public class Dispatcher {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.println();
+        System.out.println(TextHandler.getTextDigitSum());
 
     }
 
 }
 
-class Counter {
-    static double count;
-}
-
 class TextHandler implements Runnable {
-    public static final Pattern PATTERN = Pattern.compile("([1-9]+[.,]\\d+)");
+    public static final Pattern PATTERN = Pattern.compile("[1-9]+([.,]\\d+)?");
     private File file;
     String title;
     private static double textDigitSum;
-    Lock lock = new ReentrantLock();
+    Lock lock;
 
-    public TextHandler(File file, String title) {
+    public TextHandler(File file, String title, Lock lock) {
         this.file = file;
         this.title = title;
+        this.lock = lock;
     }
 
     @Override
@@ -65,9 +64,9 @@ class TextHandler implements Runnable {
                     temp = Double.parseDouble(matcher.group());
                     try {
                         while (!lock.tryLock()) {
-                            System.out.println( Thread.currentThread().getName());
+                            System.out.println( this.title + " is locked");
                         }
-                       Counter.count += temp;
+                       textDigitSum += temp;
                     } finally {
                         lock.unlock();
                     }

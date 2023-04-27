@@ -69,9 +69,9 @@ class LetterInTextChanger implements Runnable {
 
 class TextInFileHandler {
     File file;
-    boolean flag = false;
+    boolean flag;
     long spacesCount;
-    // Pattern pattern = Pattern.compile("\\s");
+   
 
     public TextInFileHandler(File file) {
         this.file = file;
@@ -110,8 +110,6 @@ class TextInFileHandler {
             if (spacesCount % 2 == 0) {
                 while (scanner.hasNext()) {
                     String str = scanner.next();//
-                    // .replace("(\\w)(\\w+)\\b(\\W?)",
-                    //  String.join("$1").toUpperCase() + "$2" + "$3");
                  str = str.replace(str.substring(0, 1), 
                     str.substring(0, 1).toUpperCase());
                     bufWrite.write(str + " ");
@@ -119,8 +117,6 @@ class TextInFileHandler {
             } else {
                 while (scanner.hasNext()) {
                     String str = scanner.next();
-                    //replace("(\\w+)(\\w)\\b(\\W)?",
-                       //     "$1" + ("$2".toUpperCase()) + "$3");
                        str = str.replace(str.substring(str.length()-1), 
                        str.substring(str.length()-1).toUpperCase());
                        bufWrite.write(str + " ");
